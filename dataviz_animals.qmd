@@ -1,0 +1,124 @@
+---
+title: "My favourite Animals"
+title-block-banner: "#000061"
+subtitle: "A soon to be preprint in a repository near you"
+description: ""
+date: last-modified
+date-format: "YYYY-MM-DD"
+mainfont: Figtree
+sansfont: Georgia
+footnotes-hover: true
+reference-location: margin
+lang: en
+number-sections: false
+crossref:
+  chapters: true
+author:
+  - name: Mattias Vesterlund
+    orcid: 0000-0001-9471-6592
+    email: matves29@kth.se
+    url: https://kth.se
+    affiliations:
+      - name: KTH Library
+        address: Osquars backe 30
+        city: Stockholm
+        postal-code: 100 44
+        url: https://www.kth.se/biblioteket
+highlight-style: pygments
+fig-cap-location: top
+format: 
+  kth-quarto-html: default
+editor: visual
+bibliography: references.bib
+link-citations: true
+csl: IEEE.csl
+---
+
+### Abstract
+
+Understanding the diversity of animal life on Earth provides insights into ecological dynamics, evolutionary history, and the interconnectedness of species across continents. This study explores some of the most emblematic and widely beloved animals from all continents, encompassing a variety of genera that highlight the breadth of biodiversity. From Panthera leo (African lion) and Elephas maximus (Asian elephant) to Macropus rufus (red kangaroo) and Canis lupus (gray wolf), we examine their ecological roles, cultural significance, and adaptations to their environments. Additionally, we discuss avian species such as Struthio camelus (ostrich) from Africa and Aptenodytes forsteri (emperor penguin) from Antarctica, and marine representatives like Delphinus delphis (common dolphin). By celebrating these animals, we aim to foster appreciation for their unique contributions to their ecosystems and to encourage conservation efforts that protect the natural heritage of every continent. This work underscores the importance of biodiversity in sustaining global ecological balance and highlights the intrinsic value of these species to humanity's natural and cultural landscapes.
+
+### Introduction
+
+Animals represent a cornerstone of Earth's biodiversity, with distinct species and genera adapted to the unique ecosystems of each continent. From apex predators like Panthera in Africa to highly specialized marsupials like Macropus in Australia[@enhancin], these species exemplify evolutionary processes shaped by geography, climate, and ecological interactions[@orre2019]. Understanding these animals’ roles in their ecosystems not only highlights the complexity of life but also emphasizes the urgent need for global conservation efforts in the face of habitat loss and climate change. This paper examines some of the world’s most iconic animals, showcasing their significance in natural and cultural contexts[@strandberg2020].
+
+### Results
+
+The visualizations provide insights into the distribution and comparison of the animals studied. Figure 1 presents a scatter plot featuring nine representative animals, illustrating their ecological niches and adaptations across different continents. This figure highlights the diversity in habitat preference, size, and ecological roles among species such as lions, elephants, kangaroos, and penguins, emphasizing the broad adaptive strategies observed across taxa.
+
+```{r, warning=F, echo=F, dev = "png", dev.args=list(bg="transparent")}
+library(ggplot2)
+library(ktheme)
+Animal<-as.factor(c("Beetles","Cats","Dogs","Elephants","Frogs","Kangaroos","Rabbits","Rats","Wombats"))
+xvals<-c(4,7,8,10,3,6,1,7,4)
+yvals<-c(2,1,5,10,6,8,9,3,4)
+A_color=palette_kth_neo(n = 9)
+animaldata<-data.frame(Animal,xvals,yvals,A_color)
+
+
+ggplot(animaldata, aes(x = xvals, y = yvals, colour=Animal))+
+  geom_point(aes(fill=Animal,shape=Animal),colour="black",size=4) +
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  scale_shape_manual(values=c(21,21,21,23,23,23,25,25,25))+
+  theme(legend.position = "right",
+        axis.line = element_line(color='black'),
+        plot.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank()) + #transparent legend panel
+  scale_y_continuous(breaks=c(3,6,9)) +
+  scale_x_continuous(breaks=c(3,6,9))+
+  labs(x ="",y="",title="Figure 1 Animals",
+    subtitle="A scatterplot with nine of my favorite animals",
+    caption="ChatGPT seems to think this is about ecological niches and stuff\n but in reality it's just random data that I threw in there to make a pretty scatter plot")
+
+```
+
+Figure 2 includes a bar plot comparing population data or public sentiment for cats versus dogs. The data reveals a strong global preference for both groups, with regional variations reflecting cultural and practical considerations. Cats tend to dominate in urban environments due to their independent nature, while dogs show higher prevalence in rural settings where their roles as companions and working animals are more prominent.
+
+```{r, warning=F, echo=F, dev = "png", dev.args=list(bg="transparent")}
+animaldata2<-animaldata[c(2,3),]
+ggplot(animaldata2, aes(x = Animal, y=xvals,fill=Animal))+
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=c(animaldata2$A_color))+
+  theme_kth_neo() +
+  theme(legend.position = "right",
+        axis.line = element_line(color='black'),
+        plot.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank()) + #transparent legend panel
+  scale_y_continuous(breaks=c(3,6,9)) +
+  labs(x ="",y="",title="Figure 2 Animals",
+    subtitle="A bar plot for Cats and Dogs",
+    caption="ChatGPT seems to think this is about population data or public sentiment but in\n reality it's just the same random data that I threw in there to make a pretty bar plot")
+
+
+```
+
+Figure 3 displays a box plot analyzing key ecological or behavioral metrics among dogs, kangaroos, and wombats. The metrics, such as home range size, dietary diversity, and social structure, reveal significant variability both within and between species. This comparison underscores the adaptability and unique evolutionary pathways of terrestrial mammals in different environmental contexts, particularly in Australia, where marsupials play a dominant ecological role.
+
+```{r, warning=F, echo=F, dev = "png", dev.args=list(bg="transparent")}
+
+animaldata3<-animaldata[c(3,6,9),]
+Animal<-c(rep(animaldata3$Animal,5))
+Values<-c(runif(15)*7)
+A_col<-c(rep(animaldata3$A_color,5))
+animaldata4<-data.frame(Animal, Values, A_col)
+ggplot(animaldata4, aes(x = Values, y=Animal,fill=Animal))+
+  geom_boxplot() +
+  scale_fill_manual(values=c(unique(animaldata4$A_col)))+
+  theme_kth_neo() +
+  theme(legend.position = "right",
+        axis.line = element_line(color='black'),
+        plot.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank()) + #transparent legend panel
+  labs(x ="",y="",title="Figure 3 Animals",
+    subtitle="A boxplot for Dogs and Marsupials",
+    caption="ChatGPT seems to think this is about ecological or behavioral metrics but in\n reality it's just some other random data that I threw in there to make a pretty boxplot")
+
+```
