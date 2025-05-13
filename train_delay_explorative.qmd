@@ -1,11 +1,11 @@
 ---
 title: "An exploration of train delay data"
-title-block-banner: "#000061"
+title-block-banner: "#000000"
 subtitle: ""
 description: ""
 date: last-modified
 date-format: "YYYY-MM-DD"
-mainfont: Figtree
+mainfont: Arial
 sansfont: Georgia
 footnotes-hover: true
 reference-location: margin
@@ -26,11 +26,10 @@ author:
         url: https://www.kth.se/biblioteket
 highlight-style: pygments
 fig-cap-location: top
-format: 
-  kth-quarto-html: default
+link-citations: true
+format: html
 editor: visual
 bibliography: references.bib
-link-citations: true
 csl: IEEE.csl
 ---
 
@@ -50,6 +49,7 @@ library(kableExtra)
 library(plotly)
 library(stringr)
 library(eulerr)
+library(viridis)
 ```
 
 ```{r data, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
@@ -121,9 +121,9 @@ ordered_by_train %>% head %>% kable() #use kable to make a nice table
 ```{r summaryplot, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
 ggplot(ordered_by_station, aes(Mean_depar)) + 
   geom_density(adjust=1/50) +
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_color_viridis() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(x ="Departure delay (min)",y="",title="Mean Departure delay",
@@ -132,9 +132,9 @@ ggplot(ordered_by_station, aes(Mean_depar)) +
 
 ggplot(ordered_by_station, aes(Mean_depar)) + 
   geom_density(adjust=1/50) +
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_color_viridis() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(x ="Departure delay (min)",y="",title="Mean Departure delay",
@@ -145,9 +145,9 @@ ggplot(ordered_by_station, aes(Mean_depar)) +
 
 ggplot(ordered_by_station, aes(x=Mean_temp ,y=Mean_depar)) + 
   geom_point() +
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_color_viridis() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(y ="Mean Departure delay (min)",x="Mean temp (Celsius)",title="Mean Delay vs Mean Temp",
@@ -175,9 +175,8 @@ traindata_t3$station_name<-as.factor(traindata_t3$station_name)
 
 ggplot(traindata_t3, aes(x=date,y=departure_delay, group = train_number,colour = train_number)) + 
   geom_line() + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(#legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(x ="Date",y="Delay (min)",title="Departure Delay - Funingnan",
@@ -191,9 +190,8 @@ traindata_t0$station_name<-as.factor(traindata_t0$station_name)
 
 ggplot(traindata_t0, aes(x=date,y=departure_delay, group = train_number,colour = train_number)) + 
   geom_line() + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(#legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(x ="Date",y="Delay (min)",title="Departure Delay - Tianshuinan",
@@ -213,9 +211,9 @@ ggplot(ordered_by_train, aes(x=n,y=Mean_depar)) +
   geom_point() + 
   geom_rect(aes(xmin = 2000 - 10, xmax = 2250 + 10, ymin = -250 - 10, ymax = 250 + 10),
                fill = "transparent", color = "red", size = 1.5)+
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_color_viridis() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(y ="Mean Departure delay (min)",x="Number of departures",title="Trains - Mean delay",
@@ -230,9 +228,9 @@ ggplot(ordered_by_station, aes(x=n,y=Mean_depar)) +
   geom_point() + 
    geom_rect(aes(xmin = 10000 - 10, xmax = 12500 + 10, ymin = -250 - 10, ymax = 250 + 10),
                fill = "transparent", color = "red", size = 1.5)+
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_color_viridis() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(y ="Departure delay (min)",x="Number of departures",title="Average Departure Delay",
@@ -261,8 +259,8 @@ fit1 <- euler(c(
   "Full data&Trains&Stations" = length(intersect(rownames(subset1),rownames(subset0))) #actual overlap
 ))
 
-KTH_infographics<-palette_kth_neo(n = 6) %>% unname
-plot(fit1, quantities = TRUE,legend=T, fills= KTH_infographics, cex.main = 0.5, main = "Venn diagram for the subsets")
+
+plot(fit1, quantities = TRUE,legend=T, fills= viridis(6), cex.main = 0.5, main = "Venn diagram for the subsets")
 ```
 
 \
@@ -277,9 +275,9 @@ With a smaller dataset we can more easily plot out individual datapoints.
 #Plot of the subset - departure delay vs temp
 subsetplot_1 <- ggplot(subset2, aes(x=temperature,y=departure_delay,text=paste0("Station: ",station_name, "\nTrain: ",train_number, "\nDelay: ", departure_delay, " min"))) + 
   geom_point() + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_color_viridis() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(y ="Departure delay (min)",x="Temperature (Celsius)",title="Selected subset",
@@ -289,9 +287,8 @@ subsetplot_1 <- ggplot(subset2, aes(x=temperature,y=departure_delay,text=paste0(
 #Plot of the subset - departure delay vs temp coloured stations
 subsetplot_2 <- ggplot(subset2, aes(x=temperature,y=departure_delay, colour=station_name)) + 
   geom_point() + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_fill_viridis()+
+  theme_minimal() +
   #theme(legend.position="none",
   #      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(y ="Departure delay (min)",x="Temperature (Celsius)",title="Selected subset",
@@ -316,9 +313,9 @@ subset3<-subset2 %>% filter(str_detect(station_name,"Qufudong Railway Station", 
 
 subsetplot_3 <- ggplot(subset3, aes(x=temperature,y=departure_delay,text=paste0("Station: ",station_name, "\nTrain: ",train_number, "\nDelay: ", departure_delay, " min"))) + 
   geom_point() + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_color_viridis() +
+  scale_fill_viridis()+
+  theme_minimal() +
   theme(legend.position="none",
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   labs(y ="Departure delay (min)",x="Temperature (Celsius)",title="Selected subset",
@@ -358,9 +355,8 @@ The dataset does include several additional metrics that could be of interest su
 ```{r analysis-weather, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
 ggplot(subset3, aes(x=weather,fill=weather,y=departure_delay)) + 
   geom_violin(adjust=3) + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_colour_viridis()+
+  theme_minimal() +
   theme(legend.position="top",
         axis.text.x = element_blank()) +
   labs(y ="Departure delay (min)",x="Weather",title="Subset",
@@ -385,9 +381,8 @@ ttest_weather<-t.test(departure_delay~weather2,data=subset3)
 
 ggplot(subset3, aes(x=weather2,fill=weather2,y=departure_delay)) + 
   geom_violin(adjust = 6) + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_colour_viridis()+
+  theme_minimal() +
   theme(legend.position="top",
         axis.text.x = element_blank()) +
   labs(y ="Departure delay (min)",x="Weather",title="Subset",
@@ -414,9 +409,8 @@ subset3$wind_strength<-gsub('N|NE|NW|E|W|S|SE|SW','',subset3$wind_strength)
 
 ggplot(subset3, aes(x=wind_strength,fill=wind_strength,y=departure_delay)) + 
   geom_violin(adjust=3) + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_colour_viridis()+
+  theme_minimal() +
   theme(legend.position="top",
         axis.text.x = element_blank()) +
   labs(y ="Departure delay (min)",x="Wind",title="Subset",
@@ -440,9 +434,8 @@ ttest_wind<-t.test(departure_delay~wind_strength2,data=subset3)
 
 ggplot(subset3, aes(x=wind_strength2,fill=wind_strength2,y=departure_delay)) + 
   geom_violin(adjust=6) + 
-  scale_color_kth() +
-  scale_fill_kth()+
-  theme_kth_neo() +
+  scale_color_viridis() +
+  theme_minimal() +
   theme(legend.position="top",
         axis.text.x = element_blank()) +
   labs(y ="Departure delay (min)",x="",title="Subset",

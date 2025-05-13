@@ -1,0 +1,466 @@
+---
+title: "An exploration of train delay data"
+title-block-banner: "#000061"
+subtitle: ""
+description: ""
+date: last-modified
+date-format: "YYYY-MM-DD"
+mainfont: Figtree
+sansfont: Georgia
+footnotes-hover: true
+reference-location: margin
+lang: en
+number-sections: false
+crossref:
+  chapters: true
+author:
+  - name: Mattias Vesterlund
+    orcid: 0000-0001-9471-6592
+    email: matves29@kth.se
+    url: https://kth.se
+    affiliations:
+      - name: KTH Library
+        address: Osquars backe 30
+        city: Stockholm
+        postal-code: 100 44
+        url: https://www.kth.se/biblioteket
+highlight-style: pygments
+fig-cap-location: top
+format: 
+  kth-quarto-html: default
+editor: visual
+bibliography: references.bib
+link-citations: true
+csl: IEEE.csl
+---
+
+### Purpose of this quarto-html
+
+-   To explore the dataset from [Zhang et al.](https://doi.org/10.6084/m9.figshare.15087882.v4)
+-   To try to determine if we can find a link between weather and train delays.
+
+```{r libraries,warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+library(ggplot2)
+library(ktheme)
+library(matrixStats)
+library(plotly)
+library(tidyr)
+library(dplyr)
+library(kableExtra)
+library(plotly)
+library(stringr)
+library(eulerr)
+```
+
+```{r data, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+traindata<-read.csv("data/high-speed trains operation data.csv")
+```
+
+Lets begin by having a look at some very basic features of the dataset we have just found:
+
+##### Dimensions
+
+```{r dimensions, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+dim(traindata)
+```
+
+##### Column names
+
+```{r columns, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+
+colnames(traindata)
+
+```
+
+The dataset seems well structured, but is also quite large. It does contain some useful headers and columns. \n \n
+
+\
+\
+
+### Overview of the data - Summary statistics
+
+To get a quick glimpse of the data we can have a look at some summary statistics.
+
+```{r summary, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+
+ordered_by_station <- traindata %>% group_by(station_name) %>% 
+  summarise(Mean_arriv=mean(arrival_delay), 
+            Mean_depar=mean(departure_delay), 
+            stdev_arriv=sd(arrival_delay),
+            stdev_delay=sd(departure_delay),
+            n=length(arrival_delay),
+            unique_arriv=length(unique(arrival_delay)),
+            unique_dep=length(unique(departure_delay)),
+            Mean_temp=mean(temperature)) %>% 
+  arrange(desc(Mean_arriv))
+top20_stations<-ordered_by_station$station_name[1:20]
+
+ordered_by_train <- traindata %>% group_by(train_number) %>% 
+  summarise(Mean_arriv=mean(arrival_delay), 
+            Mean_depar=mean(departure_delay), 
+            stdev_arriv=sd(arrival_delay),
+            stdev_delay=sd(departure_delay),
+            n=length(arrival_delay),
+            unique_arriv=length(unique(arrival_delay)),
+            unique_dep=length(unique(departure_delay)),
+            Mean_temp=mean(temperature)) %>% 
+  arrange(desc(Mean_arriv))
+top20_train<-ordered_by_train$train_number[1:20]
+
+ordered_by_station %>% head %>% kable() #use kable to make a nice table 
+
+ordered_by_train %>% head %>% kable() #use kable to make a nice table 
+
+```
+
+\
+\
+
+#### Summary stats can also be plotted
+
+```{r summaryplot, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+ggplot(ordered_by_station, aes(Mean_depar)) + 
+  geom_density(adjust=1/50) +
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(x ="Departure delay (min)",y="",title="Mean Departure delay",
+       subtitle="By station",
+       caption="")
+
+ggplot(ordered_by_station, aes(Mean_depar)) + 
+  geom_density(adjust=1/50) +
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(x ="Departure delay (min)",y="",title="Mean Departure delay",
+       subtitle="By station - zoomed in",
+       caption="")+
+  xlim(-3,3)
+
+
+ggplot(ordered_by_station, aes(x=Mean_temp ,y=Mean_depar)) + 
+  geom_point() +
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(y ="Mean Departure delay (min)",x="Mean temp (Celsius)",title="Mean Delay vs Mean Temp",
+       subtitle="By station",
+       caption="")
+
+```
+
+\
+\
+\
+\
+\
+
+### Looking at the data (and not the summary stat)
+
+Summary statistics can be informative and help us understand data, but they can also obfuscate problems in a dataset.
+
+Plotting individual datapoints can help when exploring a new set of data. So let's look at the departures from a few stations:
+
+```{r indep,  warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+traindata_t3<-filter(traindata,station_name %in% c("Funingnan Railway Station"))
+traindata_t3$date<-as.Date(traindata_t3$date)
+traindata_t3$station_name<-as.factor(traindata_t3$station_name)
+
+ggplot(traindata_t3, aes(x=date,y=departure_delay, group = train_number,colour = train_number)) + 
+  geom_line() + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(#legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(x ="Date",y="Delay (min)",title="Departure Delay - Funingnan",
+       subtitle="",
+       caption="")
+
+traindata_t0<-filter(traindata,station_name %in% c("Tianshuinan Railway Station"))
+traindata_t0<-filter(traindata_t0,train_number %in% c("G1713","G1714","G2021","G1834"))
+traindata_t0$date<-as.Date(traindata_t0$date)
+traindata_t0$station_name<-as.factor(traindata_t0$station_name)
+
+ggplot(traindata_t0, aes(x=date,y=departure_delay, group = train_number,colour = train_number)) + 
+  geom_line() + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(#legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(x ="Date",y="Delay (min)",title="Departure Delay - Tianshuinan",
+       subtitle="",
+       caption="")
+```
+
+\
+\
+
+### Subsetting the data
+
+In order to do a cursory analysis to try to answer our question we opt for subsetting the data.
+
+```{r bynumdep,  warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+ggplot(ordered_by_train, aes(x=n,y=Mean_depar)) + 
+  geom_point() + 
+  geom_rect(aes(xmin = 2000 - 10, xmax = 2250 + 10, ymin = -250 - 10, ymax = 250 + 10),
+               fill = "transparent", color = "red", size = 1.5)+
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(y ="Mean Departure delay (min)",x="Number of departures",title="Trains - Mean delay",
+       subtitle="Trains by number of departures",
+       caption="")
+
+##Lets try selecting a few trains maybe 2000 - 2500 departures over the time period.
+
+
+
+ggplot(ordered_by_station, aes(x=n,y=Mean_depar)) + 
+  geom_point() + 
+   geom_rect(aes(xmin = 10000 - 10, xmax = 12500 + 10, ymin = -250 - 10, ymax = 250 + 10),
+               fill = "transparent", color = "red", size = 1.5)+
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(y ="Departure delay (min)",x="Number of departures",title="Average Departure Delay",
+       subtitle="Stations by number of departures",
+       caption="")
+
+##Lets try selecting a few stations with maybe 10000 - 12500 departures over the time period.
+
+#Based on our criteria we select a subset of trains, and a subset of stations.
+select_trains <- unlist(as.vector(ordered_by_train[(which(ordered_by_train$n %in% c(2000:2250))),c("train_number")]))
+select_stations <- unlist(as.vector(ordered_by_station[(which(ordered_by_station$n %in% c(10000:12500))),c("station_name")]))
+
+subset1<-traindata[(which(traindata$train_number %in% select_trains)),] #filter by the trains
+subset2<-subset1[(which(subset1$station_name %in% select_stations)),] #and then filter by stations
+subset0<-traindata[(which(traindata$station_name %in% select_stations)),] #for comparison we filter by only station as well
+
+
+#Venn diagram to illustrate the selection
+fit1 <- euler(c(
+  "Full data" = nrow(traindata)-nrow(subset1)-nrow(subset0), #size of full data minus the size of the two subsets.
+  "Trains" = 0, #set to 0 because everything is a subset of the complete dataset
+  "Stations" = 0, #set to 0 because everything is a subset of the complete dataset 
+  "Trains&Stations" = 0, #set to 0 because everything is a subset of the complete dataset
+  "Full data&Trains" = nrow(subset1)-length(intersect(rownames(subset1),rownames(subset0))), #size of subset - overlap
+  "Full data&Stations" = nrow(subset0)-length(intersect(rownames(subset1),rownames(subset0))), #size of subset - overlap
+  "Full data&Trains&Stations" = length(intersect(rownames(subset1),rownames(subset0))) #actual overlap
+))
+
+KTH_infographics<-palette_kth_neo(n = 6) %>% unname
+plot(fit1, quantities = TRUE,legend=T, fills= KTH_infographics, cex.main = 0.5, main = "Venn diagram for the subsets")
+```
+
+\
+\
+\
+
+#### What does the subset look like?
+
+With a smaller dataset we can more easily plot out individual datapoints.
+
+```{r subset-exploration,  warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+#Plot of the subset - departure delay vs temp
+subsetplot_1 <- ggplot(subset2, aes(x=temperature,y=departure_delay,text=paste0("Station: ",station_name, "\nTrain: ",train_number, "\nDelay: ", departure_delay, " min"))) + 
+  geom_point() + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(y ="Departure delay (min)",x="Temperature (Celsius)",title="Selected subset",
+       subtitle=" ",
+       caption="")
+
+#Plot of the subset - departure delay vs temp coloured stations
+subsetplot_2 <- ggplot(subset2, aes(x=temperature,y=departure_delay, colour=station_name)) + 
+  geom_point() + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  #theme(legend.position="none",
+  #      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(y ="Departure delay (min)",x="Temperature (Celsius)",title="Selected subset",
+       subtitle="Coloured by stations",
+       caption="")
+
+subsetplot_1
+subsetplot_2
+ggplotly(subsetplot_1,tooltip = "text") #make the first plot interactive using plotly
+```
+
+Interactivity can be very helpful tool when trying to understand visuals and outputs. Especially for larger datasets it can be a timesaver.\
+\
+\
+\
+
+#### After outlier removal
+
+```{r subset3,  warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+#Lets remove the problematic outlier station from the data
+subset3<-subset2 %>% filter(str_detect(station_name,"Qufudong Railway Station", negate = T))
+
+subsetplot_3 <- ggplot(subset3, aes(x=temperature,y=departure_delay,text=paste0("Station: ",station_name, "\nTrain: ",train_number, "\nDelay: ", departure_delay, " min"))) + 
+  geom_point() + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(y ="Departure delay (min)",x="Temperature (Celsius)",title="Selected subset",
+       subtitle="After outlier removal",
+       caption="")
+ggplotly(subsetplot_3,tooltip = "text")
+
+
+```
+
+\
+\
+\
+
+### Basic analysis of relation between weather and departure delays
+
+Having found a reasonable subset, we want to see if we can use this to try to answer our question. So we plot temperature vs Departure delays and fit a curve to the data.
+
+```{r analysis, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+
+library(ggstatsplot) #nice apackage that also outputs statistics for a quick analysis.
+ggstatsplot::ggscatterstats(data = subset3, x = temperature, y = departure_delay,type = 'pearson')
+
+
+```
+
+There is a small association, lower temp seems to mean greater delay. Significant but a very minor effect.
+
+\
+\
+\
+
+#### Other weather related metrics
+
+The dataset does include several additional metrics that could be of interest such as weather and wind
+
+```{r analysis-weather, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+ggplot(subset3, aes(x=weather,fill=weather,y=departure_delay)) + 
+  geom_violin(adjust=3) + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="top",
+        axis.text.x = element_blank()) +
+  labs(y ="Departure delay (min)",x="Weather",title="Subset",
+       subtitle="Weather effects on departure delays",
+       caption="")+
+  ylim(-5,5)
+
+#Not printed, but this is an anova analysis of the individual weather categories
+weather_aov <- aov(departure_delay ~ weather, data = subset3) 
+w_aov_summary<-summary.lm(weather_aov)
+```
+
+\
+No obvious order to the categories, but we could bin them into two groups for an easier comparison\
+
+```{r analysis-weather2, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+subset3$weather2<-subset3$weather
+subset3$weather2<-gsub('heavy snow|moderate to heavy snow|sleet|snow showers' ,'harsh weather',subset3$weather2)
+subset3$weather2<-gsub('downpour|fog|haze|light rain|light snow|light to moderate rain|moderate rain|moderate snow|overcast|showers|sunny|cloudy' ,'good or moderate weather',subset3$weather2)
+
+ttest_weather<-t.test(departure_delay~weather2,data=subset3)
+
+ggplot(subset3, aes(x=weather2,fill=weather2,y=departure_delay)) + 
+  geom_violin(adjust = 6) + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="top",
+        axis.text.x = element_blank()) +
+  labs(y ="Departure delay (min)",x="Weather",title="Subset",
+       subtitle="Weather effects on departure delays, good-moderate vs harsh",
+       caption=paste0("P-value: ", round(ttest_weather$p.value,7), " \nMean good weather:  ",round(ttest_weather$estimate[1],4), " \nMean harsh weather:  ",round(ttest_weather$estimate[2],4)))+
+  ylim(-5,5)
+
+
+
+
+```
+
+\
+\
+
+##### Wind
+
+For wind we have even more categories. Here there isn't a numerical scale but categories of wind strength combined with wind direction. We cut out wind direction to simplify a bit:
+
+```{r analysis-wind, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+# WIND
+subset3$wind_strength<-subset3$wind
+subset3$wind_strength<-gsub('N|NE|NW|E|W|S|SE|SW','',subset3$wind_strength)
+
+ggplot(subset3, aes(x=wind_strength,fill=wind_strength,y=departure_delay)) + 
+  geom_violin(adjust=3) + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="top",
+        axis.text.x = element_blank()) +
+  labs(y ="Departure delay (min)",x="Wind",title="Subset",
+       subtitle="Wind effects on departure delays",
+       caption="")+
+  ylim(-5,5)
+#Not printed, but this is an anova analysis of the individual wind categories
+wind_aov <- aov(departure_delay ~ wind_strength, data = subset3)
+w_aov_summary<-summary.lm(wind_aov)
+```
+
+\
+And again we bin them into two categories: light and strong winds.\
+
+```{r analysis-wind2, warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+subset3$wind_strength2<-subset3$wind_strength
+subset3$wind_strength2<-gsub('fresh breeze from the |gentle breeze from the |light winds from the | light winds from the ' ,'light winds',subset3$wind_strength2)
+subset3$wind_strength2<-gsub('moderate breeze from the |strong breeze from the |moderate gale from the ' ,'strong winds',subset3$wind_strength2)
+
+ttest_wind<-t.test(departure_delay~wind_strength2,data=subset3)
+
+ggplot(subset3, aes(x=wind_strength2,fill=wind_strength2,y=departure_delay)) + 
+  geom_violin(adjust=6) + 
+  scale_color_kth() +
+  scale_fill_kth()+
+  theme_kth_neo() +
+  theme(legend.position="top",
+        axis.text.x = element_blank()) +
+  labs(y ="Departure delay (min)",x="",title="Subset",
+       subtitle="Wind effects on departure delays, light vs strong",
+       caption=paste0("P-value: ", round(ttest_wind$p.value,7), " \nMean light wind:  ",round(ttest_wind$estimate[1],4), " \nMean strong wind:  ",round(ttest_wind$estimate[2],4)))+
+  ylim(-5,5)
+
+
+
+
+```
+
+From this quick and cursory analysis we can make some initial conclusions:
+
+-   **Lower temperature** has a weak association to greater delays
+-   **Harsh weather** also correlates with delays
+-   and so does **strong winds**
+
+So when it is cold, snowing and a strong winds the chance of train delays increases.
+
+The data has been analyzed properly for references using the dataset see: [@zhang2022] and [@xue2025] for better (actual) analysis!
