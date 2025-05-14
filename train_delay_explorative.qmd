@@ -32,10 +32,16 @@ editor: visual
 bibliography: references.bib
 csl: IEEE.csl
 ---
+## Train Data analysis
+
+![Train image by Philip Mallis from Melbourne](data/train_image.jpg) Train image by Philip Mallis from Melbourne [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) via Wikimedia Commons
+
+
+
 
 ### Purpose of this quarto-html
 
--   To explore the dataset from [Zhang et al.](https://doi.org/10.6084/m9.figshare.15087882.v4)
+-   To explore the dataset from [Zhang et al.](https://doi.org/10.6084/m9.figshare.15087882.v4) doi:10.6084/m9.figshare.15087882.v4
 -   To try to determine if we can find a link between weather and train delays.
 
 ```{r libraries,warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
