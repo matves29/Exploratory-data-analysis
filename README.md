@@ -7,4 +7,28 @@ The repository contains two example-files rendered as html.
 -   A quarto of entirely random data hightlighting how quarto can be easily used to present analysis outputs in an article like format.
 -   A cursory, exploratory analysis of train delay data that highlights a potential path for exploring a new dataset.
 
-For the exploratory analysis we have created two version the one with the suffix \_KTH uses the packages ktheme (for colors when plotting) and the kth-quarto template. While the file without a suffix uses viridis for colors.
+For the exploratory analysis we have created two version; the one with the suffix \_KTH uses the packages ktheme (for colors when plotting) and the kth-quarto template. While the file without a suffix uses viridis for colors.
+
+The following R-packages need to be installed to be able to run the files:
+
+-   ggplot2
+
+-   matrixStats
+
+-   plotly
+
+-   tidyr
+
+-   dplyr
+
+-   kableExtra
+
+-   stringr
+
+-   eulerr
+
+-   viridis
+
+-   ktheme
+
+For installation of the kth-quarto template please see: [KTHquarto](https://github.com/KTH-Library/kth-quarto)
