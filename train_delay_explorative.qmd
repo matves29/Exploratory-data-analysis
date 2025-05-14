@@ -40,13 +40,11 @@ csl: IEEE.csl
 
 ```{r libraries,warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
 library(ggplot2)
-library(ktheme)
 library(matrixStats)
 library(plotly)
 library(tidyr)
 library(dplyr)
 library(kableExtra)
-library(plotly)
 library(stringr)
 library(eulerr)
 library(viridis)
@@ -72,7 +70,7 @@ colnames(traindata)
 
 ```
 
-The dataset seems well structured, but is also quite large. It does contain some useful headers and columns. \n \n
+The dataset seems well structured, but is also quite large. It does contain some useful headers and columns.
 
 \
 \
@@ -169,10 +167,12 @@ Summary statistics can be informative and help us understand data, but they can 
 Plotting individual datapoints can help when exploring a new set of data. So let's look at the departures from a few stations:
 
 ```{r indep,  warning=F, echo=F,message=F, dev = "png", dev.args=list(bg="transparent")}
+#Selecting a single station with low standard variation for individual trains and disparate (but consistent) delays
 traindata_t3<-filter(traindata,station_name %in% c("Funingnan Railway Station"))
 traindata_t3$date<-as.Date(traindata_t3$date)
 traindata_t3$station_name<-as.factor(traindata_t3$station_name)
 
+#Plotting Single station data
 ggplot(traindata_t3, aes(x=date,y=departure_delay, group = train_number,colour = train_number)) + 
   geom_line() + 
   scale_fill_viridis()+
@@ -183,11 +183,13 @@ ggplot(traindata_t3, aes(x=date,y=departure_delay, group = train_number,colour =
        subtitle="",
        caption="")
 
+#Selecting a station (and a few trains) with more normal fluctiations
 traindata_t0<-filter(traindata,station_name %in% c("Tianshuinan Railway Station"))
 traindata_t0<-filter(traindata_t0,train_number %in% c("G1713","G1714","G2021","G1834"))
 traindata_t0$date<-as.Date(traindata_t0$date)
 traindata_t0$station_name<-as.factor(traindata_t0$station_name)
 
+#Plotting Single station data
 ggplot(traindata_t0, aes(x=date,y=departure_delay, group = train_number,colour = train_number)) + 
   geom_line() + 
   scale_fill_viridis()+
@@ -220,7 +222,7 @@ ggplot(ordered_by_train, aes(x=n,y=Mean_depar)) +
        subtitle="Trains by number of departures",
        caption="")
 
-##Lets try selecting a few trains maybe 2000 - 2500 departures over the time period.
+
 
 
 
@@ -237,7 +239,8 @@ ggplot(ordered_by_station, aes(x=n,y=Mean_depar)) +
        subtitle="Stations by number of departures",
        caption="")
 
-##Lets try selecting a few stations with maybe 10000 - 12500 departures over the time period.
+##Lets try selecting a few trains maybe 2000 - 2500 departures over the time period.
+##And Lets try selecting a few stations with maybe 10000 - 12500 departures over the time period.
 
 #Based on our criteria we select a subset of trains, and a subset of stations.
 select_trains <- unlist(as.vector(ordered_by_train[(which(ordered_by_train$n %in% c(2000:2250))),c("train_number")]))
@@ -456,4 +459,4 @@ From this quick and cursory analysis we can make some initial conclusions:
 
 So when it is cold, snowing and a strong winds the chance of train delays increases.
 
-The data has been analyzed properly for references using the dataset see: [@zhang2022] and [@xue2025] for better (actual) analysis!
+The data has been analyzed properly, for references using the dataset see: [@zhangHighspeedRailwayNetwork2022] and [@xueDisturbanceImpactRainfall2025] for better (actual) analysis!
