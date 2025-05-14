@@ -32,3 +32,5 @@ The following R-packages need to be installed to be able to run the files:
 -   ktheme
 
 For installation of the kth-quarto template please see: [KTHquarto](https://github.com/KTH-Library/kth-quarto)
+
+To run the scripts either clone or fork the repository (or download as a zip file), and retrieve the data-files from [Zhang et al.](https://doi.org/10.6084/m9.figshare.15087882.v4) and place them in the 'data' folder.
