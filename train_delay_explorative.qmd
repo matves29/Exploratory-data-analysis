@@ -269,7 +269,7 @@ fit1 <- euler(c(
 ))
 
 
-plot(fit1, quantities = TRUE,legend=T, fills= viridis(6), cex.main = 0.5, main = "Venn diagram for the subsets")
+plot(fit1, quantities = TRUE,legend=T, fills= viridis_pal(alpha=0.7), cex.main = 0.5, main = "Venn diagram for the subsets")
 ```
 
 \
